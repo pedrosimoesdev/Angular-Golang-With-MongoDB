@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,9 +15,12 @@ import (
 
 // Book - We will be using this Book type to perform crud operations
 type Car struct {
-	car   string
-	model string
-	year  string
+	car       string
+	model     string
+	year      string
+	DeleteAt  time.Time
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // Connection URI
@@ -28,21 +32,31 @@ func main() {
 	server := gin.Default()
 
 	server.GET("/", getRecords)
+	server.POST("/insert", insertRecords)
+	server.PUT("/update", updateRecord)
+	server.DELETE("/delete", deleteRecord)
 
 	server.Run(":3333")
 }
 
-func getRecords(c *gin.Context) {
+func connection() (*mongo.Client, error) {
+
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI("mongodb://localhost:27017"))
 	if err != nil {
 		panic(err)
+		return client, err
 	}
+	return client, err
+}
 
-	if err := client.Ping(context.TODO(), readpref.Primary()); err != nil {
+func getRecords(c *gin.Context) {
+	con, err := connection()
+
+	if err := con.Ping(context.TODO(), readpref.Primary()); err != nil {
 		panic(err)
 	}
 
-	carsCollection := client.Database("crud").Collection("cars")
+	carsCollection := con.Database("crud").Collection("cars")
 
 	ctx := context.TODO()
 
@@ -66,9 +80,47 @@ func getRecords(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{
-		"Results": cars,
+		"results": cars,
 	})
 
 	fmt.Println("get Records")
 
+}
+
+func insertRecords(c *gin.Context) {
+	con, _ := connection()
+
+	collection := con.Database("crud").Collection("cars")
+
+	doc := bson.D{{"name", "name test"}, {"model", "model test"}, {"year", 1974}}
+	result, _ := collection.InsertOne(context.TODO(), doc)
+	fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
+
+}
+
+func updateRecord(c *gin.Context) {
+	con, _ := connection()
+
+	collection := con.Database("crud").Collection("cars")
+
+	filter := bson.D{{"_id", "6326126058adef8850b1f31a"}}
+	replacement := bson.D{{"name", "nameedit"}, {"model", "model edit"}, {"year", 2028}}
+	result, _ := collection.ReplaceOne(context.TODO(), filter, replacement)
+	fmt.Printf("Documents matched: %v\n", result.MatchedCount)
+	fmt.Printf("Documents replaced: %v\n", result.ModifiedCount)
+
+}
+
+func deleteRecord(c *gin.Context) {
+	con, _ := connection()
+
+	collection := con.Database("crud").Collection("cars")
+
+	filter := bson.D{{"_id", "6326126058adef8850b1f31a"}}
+
+	result, err := collection.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Number of documents deleted: %d\n", result.DeletedCount)
 }
