@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -30,6 +31,7 @@ const uri = "mongodb://root:root@sample.host:27017/?maxPoolSize=20&w=majority"
 func main() {
 
 	server := gin.Default()
+	server.Use(cors.Default())
 
 	server.GET("/", getRecords)
 	server.POST("/insert", insertRecords)
