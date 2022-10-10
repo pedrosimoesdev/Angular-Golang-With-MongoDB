@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"io/ioutil"
 	"log"
 	"time"
 
@@ -15,10 +18,11 @@ import (
 )
 
 // Book - We will be using this Book type to perform crud operations
-type Car struct {
-	car       string
-	model     string
-	year      string
+type Cars struct {
+	ID        int
+	Car       string
+	Model     string
+	Year      string
 	DeleteAt  time.Time
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -90,12 +94,26 @@ func getRecords(c *gin.Context) {
 }
 
 func insertRecords(c *gin.Context) {
+	data, err := ioutil.ReadAll(c.Request.Body)
+
+	if err != nil {
+		log.Panicf("error: %s", err)
+		c.JSON(500, "not ok records")
+	}
+	records := Cars{}
+	json.Unmarshal([]byte(data), &records)
+
+	var Car = records.Car
+	var Model = records.Model
+	var Year = records.Year
 	con, _ := connection()
 
 	collection := con.Database("crud").Collection("cars")
 
-	doc := bson.D{{"name", "name test"}, {"model", "model test"}, {"year", 1974}}
+	doc := bson.D{{"name", Car}, {"model", Model}, {"year", Year}}
 	result, _ := collection.InsertOne(context.TODO(), doc)
+
+	c.JSON(200, "Saved")
 	fmt.Printf("Inserted document with _id: %v\n", result.InsertedID)
 
 }
@@ -114,15 +132,25 @@ func updateRecord(c *gin.Context) {
 }
 
 func deleteRecord(c *gin.Context) {
+	data, err := ioutil.ReadAll(c.Request.Body)
+
+	if err != nil {
+		log.Panicf("error: %s", err)
+		c.JSON(500, "not ok records")
+	}
+
+	idPrimitive, err := primitive.ObjectIDFromHex(string(data))
+
 	con, _ := connection()
 
 	collection := con.Database("crud").Collection("cars")
 
-	filter := bson.D{{"_id", "6326126058adef8850b1f31a"}}
+	filter := bson.D{{"_id", idPrimitive}}
 
 	result, err := collection.DeleteOne(context.TODO(), filter)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("Number of documents deleted: %d\n", result.DeletedCount)
+	c.JSON(200, "Deleted")
 }

@@ -7,12 +7,13 @@ import { HttpClientModule } from '@angular/common/http';
 import {  ReactiveFormsModule } from '@angular/forms';
 
 import { CarsComponent } from './cars/cars.component';
+import { CarsCreateComponent } from './cars/cars-create/cars-create.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-
-    CarsComponent
+    CarsComponent,
+    CarsCreateComponent
   ],
   imports: [
     BrowserModule,

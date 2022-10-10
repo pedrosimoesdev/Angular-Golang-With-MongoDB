@@ -32,6 +32,7 @@ export class CarsService {
 
 
   deleteCar( id: any) {
+
     return this.httpClient.delete<Cars>(this.SERVER + 'delete' , {body: id}, )
       .pipe(catchError((e) => this.handleError(e)));
   }
