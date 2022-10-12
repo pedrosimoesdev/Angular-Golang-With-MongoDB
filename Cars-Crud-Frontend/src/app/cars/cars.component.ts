@@ -36,15 +36,6 @@ export class CarsComponent implements OnInit {
     this.router.navigate(['/cars/edit', id,name,model,year]);
 
 
-
-    // console.log(id);
-    // if(confirm("Are you sure to delete " )) {
-    //   //call services to get all records
-    //  this.carService.deleteCar(id).subscribe(result => {
-    //   alert(result)
-    //    this.getCars()
-    //  })
-    // }
   }
 
   deleteRecords(id: any){

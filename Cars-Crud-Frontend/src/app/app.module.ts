@@ -8,12 +8,15 @@ import {  ReactiveFormsModule } from '@angular/forms';
 
 import { CarsComponent } from './cars/cars.component';
 import { CarsCreateComponent } from './cars/cars-create/cars-create.component';
+// @ts-ignore
+import { CarsEditComponent } from './cars/cars-edit/cars-edit.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     CarsComponent,
-    CarsCreateComponent
+    CarsCreateComponent,
+    CarsEditComponent
   ],
   imports: [
     BrowserModule,
